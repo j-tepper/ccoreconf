@@ -72,6 +72,13 @@ def main():
         type=str,
         help="Output header file name",
     )
+    parser.add_argument(
+        "-p",
+        "--prefix",
+        required=False,
+        type=str,
+        help="Prefix for buffer symbol names",
+    )
     args = parser.parse_args()
 
     sensorJsonData = args.input
@@ -111,9 +118,13 @@ def main():
     env = get_jinja_env()
     template = env.get_template('cbor_dumps.h.jinja')
 
+    # Sanitize prefix to be a valid C identifier (replace hyphens with underscores)
+    prefix = args.prefix.replace('-', '_') if args.prefix else None
+
     context = {
         'coreconf_bytes': list(cborData),
-        'key_mapping_bytes': list(keyMappingCborData)
+        'key_mapping_bytes': list(keyMappingCborData),
+        'prefix': prefix
     }
 
     output = template.render(context)
